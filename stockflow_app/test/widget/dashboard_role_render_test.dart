@@ -110,6 +110,13 @@ void main() {
     });
 
     testWidgets('Owner dashboard renders full business KPIs and revenue metrics', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -135,9 +142,12 @@ void main() {
       expect(find.text('TODAY'), findsOneWidget);
       expect(find.text('Sales'), findsWidgets);
       expect(find.text('Revenue'), findsWidgets);
+      expect(find.text("Today's Profit"), findsOneWidget);
+      expect(find.text('Total Profit'), findsWidgets);
       expect(find.text('Low Stock'), findsOneWidget);
       expect(find.text('Out of Stock'), findsOneWidget);
       expect(find.text('THIS WEEK'), findsOneWidget);
+      expect(find.text('ALL-TIME OVERVIEW'), findsOneWidget);
       expect(find.text('QUICK ACTIONS'), findsOneWidget);
     });
   });
