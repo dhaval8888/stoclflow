@@ -1,0 +1,37 @@
+# StockFlow Render Blueprint Specification
+# Deploy with one click or via GitHub repository connection on Render.com
+services:
+  - type: web
+    name: stockflow-api
+    runtime: node
+    rootDir: stockflow-api
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set this in the Render dashboard to your Neon / Managed PostgreSQL connection string
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        value: "*"
+      # Optional: Cloudinary & Firebase credentials can be supplied as secret env vars
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

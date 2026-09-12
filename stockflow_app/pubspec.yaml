@@ -1,0 +1,74 @@
+name: stockflow_app
+description: "StockFlow — Smart Inventory & Business Management System"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ─── State Management ───────────────────────────────────
+  flutter_riverpod: ^2.4.10
+  riverpod_annotation: ^2.3.5
+
+  # ─── Navigation ─────────────────────────────────────────
+  go_router: ^13.2.0
+
+  # ─── Networking ─────────────────────────────────────────
+  dio: ^5.4.1
+
+  # ─── Secure Storage ─────────────────────────────────────
+  flutter_secure_storage: ^9.0.0
+
+  # ─── Environment Variables ──────────────────────────────
+  flutter_dotenv: ^5.1.0
+
+  # ─── Barcode Scanning ───────────────────────────────────
+  mobile_scanner: ^5.0.0
+
+  # ─── Image Handling ─────────────────────────────────────
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+
+  # ─── Charts ─────────────────────────────────────────────
+  fl_chart: ^0.68.0
+
+  # ─── Firebase ───────────────────────────────────────────
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
+
+  # ─── UI Utilities ───────────────────────────────────────
+  shimmer: ^3.0.0
+  intl: ^0.19.0
+  google_fonts: ^6.2.1
+
+  # ─── Code Generation (runtime) ──────────────────────────
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+
+  # ─── Local Storage ──────────────────────────────────
+  shared_preferences: ^2.2.3
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # ─── Code Generation ────────────────────────────────────
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.3.13
+  freezed: ^2.4.7
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/images/
+    - assets/icons/

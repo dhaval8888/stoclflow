@@ -1,0 +1,68 @@
+name: StockFlow CI
+
+on:
+  push:
+    branches: [ main, master, 'feat/**', 'fix/**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend:
+    name: Backend Unit Tests & Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stockflow-api
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: stockflow-api/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Backend Unit Tests
+        run: npm run test:unit
+        env:
+          NODE_ENV: test
+          JWT_ACCESS_SECRET: github_actions_ci_jwt_access_secret_sample_key_1234
+          JWT_REFRESH_SECRET: github_actions_ci_jwt_refresh_secret_sample_key_1234
+
+  flutter:
+    name: Flutter Analyzer & Automated Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stockflow_app
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Verify Code Style & Static Analysis
+        run: flutter analyze
+
+      - name: Run Flutter Tests
+        run: flutter test

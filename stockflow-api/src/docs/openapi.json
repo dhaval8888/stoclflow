@@ -1,0 +1,377 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "StockFlow REST API",
+    "description": "Production-grade API for StockFlow Smart Inventory & Point-of-Sale (POS) Management System.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "StockFlow Engineering Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Current API Base URL"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Provide access token obtained from /auth/login"
+      }
+    },
+    "schemas": {
+      "StandardResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "data": { "type": "object" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string" },
+          "code": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Authenticate user & issue tokens",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "owner@demo.com" },
+                  "password": { "type": "string", "example": "Owner@123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Rotate refresh token for new access token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["refreshToken"],
+                "properties": {
+                  "refreshToken": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "New tokens issued" },
+          "401": { "description": "Invalid or revoked refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Revoke current refresh token",
+        "responses": {
+          "200": { "description": "Logged out successfully" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get authenticated user profile and permissions",
+        "responses": {
+          "200": { "description": "Profile data" }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List categories for business",
+        "responses": {
+          "200": { "description": "List of categories" }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create category (Manager+)",
+        "responses": {
+          "201": { "description": "Category created" }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List products with search, category filtering, and pagination",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "categoryId", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated products" }
+        }
+      },
+      "post": {
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create product (Manager+)",
+        "responses": {
+          "201": { "description": "Product created" }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get product details by ID or barcode",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Product details" }
+        }
+      },
+      "put": {
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update product (Manager+)",
+        "responses": {
+          "200": { "description": "Product updated" }
+        }
+      },
+      "delete": {
+        "tags": ["Products"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Deactivate / soft delete product (Manager+)",
+        "responses": {
+          "200": { "description": "Product deactivated" }
+        }
+      }
+    },
+    "/inventory": {
+      "get": {
+        "tags": ["Inventory"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get current inventory balances and low-stock alerts",
+        "responses": {
+          "200": { "description": "Inventory list" }
+        }
+      }
+    },
+    "/inventory/movement": {
+      "post": {
+        "tags": ["Inventory"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Record stock movement (STOCK_IN, STOCK_OUT, ADJUSTMENT) (Manager+)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["productId", "type", "quantity"],
+                "properties": {
+                  "productId": { "type": "string" },
+                  "type": { "type": "string", "enum": ["STOCK_IN", "STOCK_OUT", "ADJUSTMENT"] },
+                  "quantity": { "type": "number" },
+                  "note": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Movement recorded" }
+        }
+      }
+    },
+    "/sales": {
+      "get": {
+        "tags": ["Sales"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List sales history with pagination",
+        "responses": {
+          "200": { "description": "Sales history" }
+        }
+      },
+      "post": {
+        "tags": ["Sales"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Execute atomic checkout with pessimistic row locking",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["items", "paymentMethod"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["productId", "quantity"],
+                      "properties": {
+                        "productId": { "type": "string" },
+                        "quantity": { "type": "number" },
+                        "discount": { "type": "number", "default": 0 }
+                      }
+                    }
+                  },
+                  "paymentMethod": { "type": "string", "enum": ["CASH", "CARD", "UPI", "OTHER"] },
+                  "discountAmount": { "type": "number", "default": 0 },
+                  "taxAmount": { "type": "number", "default": 0 },
+                  "note": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Sale completed atomically" },
+          "400": { "description": "Insufficient stock or invalid input" }
+        }
+      }
+    },
+    "/sales/{id}": {
+      "get": {
+        "tags": ["Sales"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get sale receipt details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Receipt details" }
+        }
+      }
+    },
+    "/sales/{id}/void": {
+      "post": {
+        "tags": ["Sales"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Void a sale and reverse inventory movement (Manager+)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Sale voided and stock restored" }
+        }
+      }
+    },
+    "/analytics/summary": {
+      "get": {
+        "tags": ["Analytics"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "High-level business overview KPIs (Manager+)",
+        "responses": {
+          "200": { "description": "Summary KPIs" }
+        }
+      }
+    },
+    "/analytics/sales-trend": {
+      "get": {
+        "tags": ["Analytics"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Sales trend over past N days (Manager+)",
+        "parameters": [
+          { "name": "days", "in": "query", "schema": { "type": "integer", "default": 30 } }
+        ],
+        "responses": {
+          "200": { "description": "Daily sales points" }
+        }
+      }
+    },
+    "/analytics/top-products": {
+      "get": {
+        "tags": ["Analytics"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Top performing products by sales volume (Manager+)",
+        "responses": {
+          "200": { "description": "Top product rankings" }
+        }
+      }
+    },
+    "/analytics/profit": {
+      "get": {
+        "tags": ["Analytics"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Profit and margin reports (Owner only)",
+        "responses": {
+          "200": { "description": "Gross profit and cost metrics" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "List team members (Manager+)",
+        "responses": {
+          "200": { "description": "List of staff users" }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create new employee account (Owner only)",
+        "responses": {
+          "201": { "description": "Employee created" }
+        }
+      }
+    },
+    "/business": {
+      "get": {
+        "tags": ["Business"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get business configuration and details",
+        "responses": {
+          "200": { "description": "Business profile" }
+        }
+      },
+      "patch": {
+        "tags": ["Business"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update business details (Owner only)",
+        "responses": {
+          "200": { "description": "Business profile updated" }
+        }
+      }
+    }
+  }
+}
