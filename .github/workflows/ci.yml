@@ -61,6 +61,9 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Setup Environment Config
+        run: cp .env.example .env
+
       - name: Verify Code Style & Static Analysis
         run: flutter analyze
 
